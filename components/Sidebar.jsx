@@ -1,32 +1,86 @@
+"use client";
+
+import { SignOutButton, UserButton, useUser } from "@clerk/nextjs";
 import Image from "next/image";
-import React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useRef, useState } from "react";
+import { IoMdArrowDropdown } from "react-icons/io";
 
 const Sidebar = () => {
+  const { user } = useUser();
+  console.log(user);
+  
+  // State to manage the visibility of the div
+  const [isDivOpen, setIsDivOpen] = useState(false);
+
+  const [image, setImage] = useState("");
+
+  const inputRef = useRef(null);
+
+  const router = useRouter();
+
+  const signOut = () => {
+    router.push('/')
+  }
+
+  // Function to toggle the visibility of the div
+  const toggleDiv = () => {
+    setIsDivOpen(!isDivOpen);
+  };
+
+  const handleImage = () => {
+    inputRef.current.click();
+  };
+
+  const handleChange = (event) => {
+    const file = event.target.files[0];
+    setImage(file);
+  };
+
   return (
     <div className="h-full w-full relative flex flex-col items-center">
       {/** logo */}
-      <div className="">
-        <svg
-          width="35"
-          height="35"
-          viewBox="0 0 35 35"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <g clip-path="url(#clip0_1_227)">
-            <path
-              d="M26.6659 11.002C26.437 10.7796 26.1159 10.6785 25.8016 10.7302C25.4868 10.7817 25.2149 10.9794 25.0688 11.263C24.5665 12.2388 23.9285 13.1356 23.1778 13.9284C23.2526 13.3557 23.2903 12.7796 23.2903 12.202C23.2903 11.0937 23.1418 9.95311 22.8487 8.81161C21.885 5.06228 19.3579 1.89152 15.9157 0.112398C15.6161 -0.0424449 15.259 -0.0370083 14.9641 0.126896C14.6693 0.290868 14.4762 0.591493 14.4497 0.927759C14.1814 4.33498 12.4264 7.4348 9.632 9.43441C9.59502 9.46106 9.5583 9.48804 9.52159 9.51489C9.44554 9.57053 9.37386 9.62315 9.30688 9.66731C9.29641 9.67429 9.286 9.68141 9.2758 9.68872C7.51836 10.947 6.06825 12.6243 5.08208 14.5398C4.07999 16.4882 3.5719 18.579 3.5719 20.754C3.5719 21.862 3.72043 23.0026 4.01341 24.1443C5.55949 30.1619 10.9749 34.3648 17.1827 34.3648C24.6874 34.3648 30.7928 28.259 30.7928 20.754C30.7928 17.0531 29.3272 13.5897 26.6659 11.002Z"
-              fill="#409BEE"
-            />
-            <circle cx="16.1717" cy="20.2146" r="4.04293" fill="white" />
-          </g>
-          <defs>
-            <clipPath id="clip0_1_227">
-              <rect width="34.3649" height="34.3649" fill="white" />
-            </clipPath>
-          </defs>
-        </svg>
+      <div className="overflow-hidden flex space-x-[5px]">
+        {image ? (
+          <Image
+            src={URL.createObjectURL(image)}
+            alt="update-logo"
+            width={35}
+            height={35}
+          />
+        ) : (
+          <Image src="/logoImage.png" alt="logo" width={35} height={35} />
+        )}
+
+        {user ? (
+          <div
+            className="cursor-pointer w-[20px] h-[20px] hover:bg-[#2C3A58] rounded-md flex items-center justify-center"
+            onClick={toggleDiv}
+          >
+            <IoMdArrowDropdown className="text-[#FFFFFF]" />
+          </div>
+        ) : null}
       </div>
+
+      {/* Conditional rendering of the div based on the state (to update logo) */}
+      {isDivOpen && (
+        <div className="bg-[#2C3A58] w-[100px] h-[25px] rounded-[3px] flex items-center justify-center text-white z-10 absolute left-[40px] top-[25px] font-manrope text-xs font-semibold">
+          {/* Content of the div */}
+          <h2
+            className="w-[80px] h-[18px] hover:text-gray-300 cursor-pointer px-[1px]"
+            onClick={handleImage}
+          >
+            Update Logo
+          </h2>
+          <input
+            type="file"
+            ref={inputRef}
+            onChange={handleChange}
+            style={{ display: "none" }}
+          />
+        </div>
+      )}
 
       {/** menu items */}
       <div className="mt-[70px] space-y-[10px]">
@@ -129,8 +183,56 @@ const Sidebar = () => {
       </div>
 
       {/** user image and logout */}
-      <div className="absolute bottom-0 space-y-[20px] flex flex-col items-center">
-        <div className="w-[44px] h-[44px] rounded-full bg-sky-200 overflow-hidden">
+      <div className="absolute bottom-0 space-y-[15px] flex flex-col items-center">
+        {user ? (
+          <div className="flex flex-col items-center justify-center gap-5">
+            <UserButton />
+            <SignOutButton>
+            <div 
+              className="rounded-[20px] hover:bg-[#2C3A58] w-[60px] h-[60px] flex items-center justify-center cursor-pointer"
+              onClick={signOut}
+            >
+              <svg
+                width="22"
+                height="20"
+                viewBox="0 0 22 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M17 6L21 10M21 10L17 14M21 10H8M14 2.20404C12.7252 1.43827 11.2452 1 9.66667 1C4.8802 1 1 5.02944 1 10C1 14.9706 4.8802 19 9.66667 19C11.2452 19 12.7252 18.5617 14 17.796"
+                  stroke="#CCCCCC"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            </SignOutButton>
+          </div>
+        ) : (
+          <div>
+            {/** sign-in/up */}
+            <Link
+              className="w-[70px] h-[60px] flex items-center justify-center rounded-[20px] hover:bg-[#2C3A58] cursor-pointer"
+              href="/sign-in"
+            >
+              <h2 className="font-manrope font-semibold text-[18px] text-[#FFFFFF]">
+                Log in
+              </h2>
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;
+
+{
+  /**
+<div className="w-[44px] h-[44px] rounded-full bg-sky-200 overflow-hidden">
           <Image
             src='/userImage.png'
             alt="user-image"
@@ -138,28 +240,5 @@ const Sidebar = () => {
             height={37}
             className="mt-[10px] ml-[7px]"
           />
-        </div>
-
-        <div className="rounded-[20px] hover:bg-[#2C3A58] w-[60px] h-[60px] flex items-center justify-center cursor-pointer">
-          <svg
-            width="22"
-            height="20"
-            viewBox="0 0 22 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M17 6L21 10M21 10L17 14M21 10H8M14 2.20404C12.7252 1.43827 11.2452 1 9.66667 1C4.8802 1 1 5.02944 1 10C1 14.9706 4.8802 19 9.66667 19C11.2452 19 12.7252 18.5617 14 17.796"
-              stroke="#CCCCCC"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default Sidebar;
+        </div> */
+}
